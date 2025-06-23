@@ -3,63 +3,81 @@ from PyPDF2 import PdfReader, PdfMerger
 import io
 
 st.set_page_config(page_title="PDF 병합기", page_icon="📎")
-st.title("📎 PDF 병합기 - 순서 조정 + 페이지 선택")
+st.title("📎 PDF 병합기 - 순서 선택 & 페이지 범위 지정")
 
 uploaded_files = st.file_uploader("📄 PDF 파일 업로드", type="pdf", accept_multiple_files=True)
 
 if uploaded_files:
     st.markdown("### 🔢 병합할 순서와 페이지 범위를 선택하세요")
 
-    file_options = []
+    n_files = len(uploaded_files)
+    selected_orders = {}
     page_ranges = {}
+
+    order_choices = list(range(1, n_files + 1))
 
     for i, uploaded_file in enumerate(uploaded_files):
         pdf_reader = PdfReader(uploaded_file)
         num_pages = len(pdf_reader.pages)
-        file_label = f"{i+1}. {uploaded_file.name} ({num_pages} page{'s' if num_pages > 1 else ''})"
 
-        col1, col2 = st.columns([2, 2])
+        col1, col2 = st.columns([2, 3])
         with col1:
-            new_order = st.number_input(f"👉 병합 순서 - {uploaded_file.name}", min_value=1, max_value=len(uploaded_files), value=i+1, key=f"order_{i}")
-        with col2:
-            page_input = st.text_input(f"📃 포함할 페이지 (예: 1-2, 4)", value=f"1-{num_pages}", key=f"pages_{i}")
+            # 사용자가 선택한 순서를 추적하며 중복을 방지
+            available_orders = [o for o in order_choices if o not in selected_orders.values()]
+            default_order = i + 1 if i + 1 in available_orders else available_orders[0]
+            selected_order = st.selectbox(
+                f"📑 병합 순서 - {uploaded_file.name}",
+                options=available_orders,
+                index=available_orders.index(default_order),
+                key=f"order_{i}"
+            )
+            selected_orders[i] = selected_order
 
-        file_options.append({
-            "file": uploaded_file,
-            "order": new_order,
-            "pages": page_input
-        })
+        with col2:
+            page_range = st.text_input(
+                f"📃 포함할 페이지 (예: 1-2, 4) - {uploaded_file.name}",
+                value=f"1-{num_pages}",
+                key=f"pages_{i}"
+            )
+            page_ranges[i] = page_range
 
     filename = st.text_input("💾 저장할 파일 이름을 입력하세요 (확장자 제외)", value="merged_pdf")
 
     if st.button("📚 PDF 병합하기"):
         try:
-            # 순서대로 정렬
-            sorted_files = sorted(file_options, key=lambda x: x["order"])
+            # 병합 순서대로 정렬
+            merge_plan = sorted([
+                {
+                    "order": selected_orders[i],
+                    "file": uploaded_files[i],
+                    "pages": page_ranges[i]
+                }
+                for i in range(n_files)
+            ], key=lambda x: x["order"])
+
             merger = PdfMerger()
 
-            for item in sorted_files:
+            for item in merge_plan:
                 file = item["file"]
                 page_range_text = item["pages"]
                 pdf_reader = PdfReader(file)
                 num_pages = len(pdf_reader.pages)
 
-                # 페이지 번호 파싱 (1부터 시작하는 것을 0부터 인덱싱 처리)
+                # 페이지 파싱
                 pages_to_merge = []
                 for part in page_range_text.split(','):
                     part = part.strip()
                     if '-' in part:
-                        start, end = part.split('-')
-                        pages_to_merge.extend(range(int(start)-1, int(end)))
+                        start, end = map(int, part.split('-'))
+                        pages_to_merge.extend(range(start - 1, end))
                     else:
-                        pages_to_merge.append(int(part)-1)
+                        pages_to_merge.append(int(part) - 1)
 
-                # 새 PDF에 해당 페이지만 추가
-                temp_writer = PdfMerger()
                 for i in pages_to_merge:
                     if 0 <= i < num_pages:
-                        merger.append(file, pages=(i, i+1))  # append 한 페이지씩
+                        merger.append(file, pages=(i, i + 1))  # 한 페이지씩 추가
 
+            # 저장
             merged_pdf = io.BytesIO()
             merger.write(merged_pdf)
             merger.close()
@@ -74,4 +92,4 @@ if uploaded_files:
             )
 
         except Exception as e:
-            st.error(f"오류가 발생했습니다: {e}")
+            st.error(f"❌ 오류 발생: {e}")

@@ -3,7 +3,7 @@ from PyPDF2 import PdfReader, PdfMerger
 import io
 
 st.set_page_config(page_title="PDF 병합기", page_icon="📎")
-st.title("📎 PDF 병합기 - 순서 선택 & 페이지 범위 지정")
+st.title("📎PDF 병합기☺️")
 
 uploaded_files = st.file_uploader("📄 PDF 파일 업로드", type="pdf", accept_multiple_files=True)
 

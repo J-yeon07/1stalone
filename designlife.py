@@ -4,7 +4,7 @@ import pandas as pd
 
 # 페이지 제목 설정
 st.set_page_config(
-    page_title="나의 두 가지 인생 그래프",
+    page_title="나의 미래를 만들어보자😎",
     layout="wide",
     initial_sidebar_state="expanded"
 )

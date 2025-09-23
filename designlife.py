@@ -16,8 +16,8 @@ if "dream_path" not in st.session_state:
 if "realistic_path" not in st.session_state:
     st.session_state.realistic_path = pd.DataFrame(columns=['age', 'happiness'])
 
-st.title("나의 두 가지 인생 그래프")
-st.markdown("선택에 따라 달라지는 나의 미래를 그려보아요.")
+st.title("나의 미래를 만들어보자😎")
+st.markdown("선택에 따라 달라지는 나의 미래를 그래프를 이용하여 그려보아요.")
 
 st.info("🎨 **사용 방법**\n\n- 아래 슬라이더를 이용해 나이와 행복지수를 설정하고 '점 추가하기' 버튼을 누르면 그래프에 점이 추가됩니다.\n- '초기화' 버튼으로 언제든 다시 시작할 수 있어요.")
 

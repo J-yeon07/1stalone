@@ -4,7 +4,7 @@ import pandas as pd
 
 # 페이지 제목 설정
 st.set_page_config(
-    page_title="나의 미래를 만들어보자😎",
+    page_title="나의 인생을 그려보자😎",
     layout="wide",
     initial_sidebar_state="expanded"
 )
@@ -16,10 +16,10 @@ if "dream_path" not in st.session_state:
 if "realistic_path" not in st.session_state:
     st.session_state.realistic_path = pd.DataFrame(columns=['age', 'happiness'])
 
-st.title("나의 미래를 만들어보자😎")
+st.title("나의 인생을 그려보자😎")
 st.markdown("선택에 따라 달라지는 나의 미래를 그래프를 이용하여 그려보아요.")
 
-st.info("🎨 **사용 방법**\n\n- 아래 슬라이더를 이용해 나이와 행복지수를 설정하고 '점 추가하기' 버튼을 누르면 그래프에 점이 추가됩니다.\n- '초기화' 버튼으로 언제든 다시 시작할 수 있어요.")
+st.info("🎨 **사용 방법**\n\n- 아래 슬라이더를 이용해 나이와 행복지수를 설정하고 '점 추가하기' 버튼을 누르면 그래프에 점이 추가됩니다.\n- '마지막 점 되돌리기' 또는 '초기화' 버튼으로 언제든 다시 시작하거나 수정할 수 있어요.")
 
 # --- 그래프 1: 내가 정말 원하는 선택을 했을 때 ---
 st.header("💖 인생 그래프 1: 내가 정말 원하는 선택을 했을 때")
@@ -37,6 +37,11 @@ with col1:
         st.session_state.dream_path = pd.concat([st.session_state.dream_path, new_point], ignore_index=True)
         st.session_state.dream_path = st.session_state.dream_path.sort_values(by='age')
 
+    # 마지막 점을 삭제하는 버튼을 추가합니다.
+    if st.button("마지막 점 되돌리기", key='undo1'):
+        if not st.session_state.dream_path.empty:
+            st.session_state.dream_path = st.session_state.dream_path.iloc[:-1]
+    
     # 그래프를 초기화하는 버튼을 만듭니다.
     if st.button("그래프 초기화", key='reset1'):
         st.session_state.dream_path = pd.DataFrame(columns=['age', 'happiness'])
@@ -79,6 +84,10 @@ with col3:
         new_point = pd.DataFrame([{'age': add_age2, 'happiness': add_happiness2}])
         st.session_state.realistic_path = pd.concat([st.session_state.realistic_path, new_point], ignore_index=True)
         st.session_state.realistic_path = st.session_state.realistic_path.sort_values(by='age')
+
+    if st.button("마지막 점 되돌리기", key='undo2'):
+        if not st.session_state.realistic_path.empty:
+            st.session_state.realistic_path = st.session_state.realistic_path.iloc[:-1]
 
     if st.button("그래프 초기화", key='reset2'):
         st.session_state.realistic_path = pd.DataFrame(columns=['age', 'happiness'])
